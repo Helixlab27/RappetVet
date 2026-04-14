@@ -8,12 +8,11 @@ const STATUTS = ['Tous', 'ok', 'bientot', 'urgent', 'retard'];
 const PAGE_SIZE = 20;
 
 export default function Animaux({ animaux, vaccins, onSetPage, onSelectAnimal, onDelete }) {
-  const [search, setSearch] = useState('');
+  const [search, setSearch]           = useState('');
   const [filtreEspece, setFiltreEspece] = useState('Tous');
   const [filtreStatut, setFiltreStatut] = useState('Tous');
-  const [page, setPage] = useState(1);
+  const [page, setPage]               = useState(1);
 
-  // Meilleur statut pour chaque animal (le pire parmi ses vaccins)
   const statutAnimal = useMemo(() => {
     const ordre = { retard: 0, urgent: 1, bientot: 2, ok: 3 };
     const map = {};
@@ -51,8 +50,9 @@ export default function Animaux({ animaux, vaccins, onSetPage, onSelectAnimal, o
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paginated  = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-
   const go = (n) => setPage(Math.max(1, Math.min(totalPages, n)));
+
+  const handleVoir = (animalId) => { onSelectAnimal(animalId); onSetPage('fiche-animal'); };
 
   return (
     <div>
@@ -75,14 +75,14 @@ export default function Animaux({ animaux, vaccins, onSetPage, onSelectAnimal, o
         />
         {search && (
           <button
-            style={{ background: 'none', border: 'none', color: 'var(--text-3)', cursor: 'none' }}
+            style={{ background: 'none', border: 'none', color: 'var(--text-3)', cursor: 'auto' }}
             onClick={() => setSearch('')}
           >✕</button>
         )}
       </div>
 
       <div className="filter-row">
-        <span style={{ color: 'var(--text-3)', fontSize: 11, fontFamily: 'JetBrains Mono', alignSelf: 'center' }}>ESPÈCE</span>
+        <span style={{ color: 'var(--text-3)', fontSize: 11, fontFamily: 'JetBrains Mono', alignSelf: 'center', flexShrink: 0 }}>ESPÈCE</span>
         {ESPECES.map((e) => (
           <button
             key={e}
@@ -92,7 +92,7 @@ export default function Animaux({ animaux, vaccins, onSetPage, onSelectAnimal, o
             {e === 'Tous' ? 'Tous' : e.charAt(0).toUpperCase() + e.slice(1)}
           </button>
         ))}
-        <span style={{ color: 'var(--text-3)', fontSize: 11, fontFamily: 'JetBrains Mono', alignSelf: 'center', marginLeft: 8 }}>STATUT</span>
+        <span style={{ color: 'var(--text-3)', fontSize: 11, fontFamily: 'JetBrains Mono', alignSelf: 'center', marginLeft: 8, flexShrink: 0 }}>STATUT</span>
         {STATUTS.map((s) => (
           <button
             key={s}
@@ -104,6 +104,7 @@ export default function Animaux({ animaux, vaccins, onSetPage, onSelectAnimal, o
         ))}
       </div>
 
+      {/* ── Tableau desktop ──────────────────────────────────── */}
       <div className="rv-table-wrapper">
         <table className="rv-table">
           <thead>
@@ -146,20 +147,11 @@ export default function Animaux({ animaux, vaccins, onSetPage, onSelectAnimal, o
                   <td>{sv ? <StatusBadge statut={sv.statut} /> : <span className="mono" style={{ color: 'var(--text-3)' }}>—</span>}</td>
                   <td>
                     <div style={{ display: 'flex', gap: 6 }}>
-                      <button
-                        className="btn btn-ghost btn-sm"
-                        onClick={() => { onSelectAnimal(a.id); onSetPage('fiche-animal'); }}
-                      >
-                        Voir
-                      </button>
+                      <button className="btn btn-ghost btn-sm" onClick={() => handleVoir(a.id)}>Voir</button>
                       <button
                         className="btn btn-danger btn-sm"
-                        onClick={() => {
-                          if (confirm(`Supprimer ${a.nom} et tous ses vaccins ?`)) onDelete(a.id);
-                        }}
-                      >
-                        🗑
-                      </button>
+                        onClick={() => { if (confirm(`Supprimer ${a.nom} et tous ses vaccins ?`)) onDelete(a.id); }}
+                      >🗑</button>
                     </div>
                   </td>
                 </tr>
@@ -169,15 +161,49 @@ export default function Animaux({ animaux, vaccins, onSetPage, onSelectAnimal, o
         </table>
       </div>
 
+      {/* ── Cards mobile ─────────────────────────────────────── */}
+      <div className="mobile-cards">
+        {paginated.length === 0 ? (
+          <div className="empty-state">Aucun animal trouvé</div>
+        ) : paginated.map((a) => {
+          const pv = prochainsVaccins[a.id];
+          const sv = statutAnimal[a.id];
+          return (
+            <div key={a.id} className="mac">
+              <div className="mac-top">
+                <SpeciesIcon espece={a.espece} size={22} />
+                <div>
+                  <div className="mac-name">{a.nom}</div>
+                  <div className="mac-espece">{a.espece}{a.race ? ` · ${a.race}` : ''}</div>
+                </div>
+                {sv && <div className="mac-badge-ml"><StatusBadge statut={sv.statut} /></div>}
+              </div>
+              <div className="mac-proprio">{a.proprietaire_prenom} {a.proprietaire_nom}</div>
+              {pv && (
+                <div className="mac-meta">
+                  <span style={{ fontSize: 12, color: 'var(--text-2)' }}>{pv.type}</span>
+                  <span className="mono">{formatDate(pv.date_prochain)}</span>
+                </div>
+              )}
+              <div className="mac-actions">
+                <button className="btn btn-ghost btn-sm" onClick={() => handleVoir(a.id)}>
+                  Voir la fiche
+                </button>
+                <button
+                  className="btn btn-danger btn-sm mac-actions-icon"
+                  onClick={() => { if (confirm(`Supprimer ${a.nom} et tous ses vaccins ?`)) onDelete(a.id); }}
+                >🗑</button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
       {totalPages > 1 && (
         <div className="pagination">
           <button className="page-btn" onClick={() => go(page - 1)} disabled={page === 1}>←</button>
           {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
-            <button
-              key={n}
-              className={`page-btn${page === n ? ' active' : ''}`}
-              onClick={() => go(n)}
-            >{n}</button>
+            <button key={n} className={`page-btn${page === n ? ' active' : ''}`} onClick={() => go(n)}>{n}</button>
           ))}
           <button className="page-btn" onClick={() => go(page + 1)} disabled={page === totalPages}>→</button>
         </div>

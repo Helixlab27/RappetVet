@@ -1,14 +1,14 @@
-export default function Sidebar({ page, setPage, urgentCount, settings, onResetDemo }) {
+export default function Sidebar({ page, setPage, urgentCount, settings, onResetDemo, isOpen }) {
   const nav = [
-    { id: 'dashboard',    label: 'Tableau de bord', icon: '🏠' },
-    { id: 'animaux',      label: 'Animaux',          icon: '🐾', badge: urgentCount > 0 ? urgentCount : null },
-    { id: 'nouvel-animal',label: 'Nouvel animal',    icon: '➕' },
-    { id: 'rappels',      label: 'Rappels',           icon: '✉️' },
-    { id: 'parametres',   label: 'Paramètres',        icon: '⚙️' },
+    { id: 'dashboard',     label: 'Tableau de bord', icon: '🏠' },
+    { id: 'animaux',       label: 'Animaux',          icon: '🐾', badge: urgentCount > 0 ? urgentCount : null },
+    { id: 'nouvel-animal', label: 'Nouvel animal',    icon: '➕' },
+    { id: 'rappels',       label: 'Rappels',           icon: '✉️' },
+    { id: 'parametres',    label: 'Paramètres',        icon: '⚙️' },
   ];
 
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar${isOpen ? ' open' : ''}`}>
       <div className="sidebar-logo">
         <div className="logo-row">
           <span className="logo-dot" />

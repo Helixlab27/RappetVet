@@ -6,7 +6,6 @@ import { formatDate, joursRestants } from '../utils/statut';
 export default function Dashboard({ animaux, vaccins, settings, onSetPage, onModalOpen, onMarquerContacte }) {
   const now = new Date();
 
-  const today = formatDate(now.toISOString().slice(0, 10));
   const dayName = now.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
   const urgent = useMemo(() =>
@@ -23,16 +22,14 @@ export default function Dashboard({ animaux, vaccins, settings, onSetPage, onMod
     });
   }, [vaccins]);
 
-  const contactes = vaccins.filter((v) => v.contacte);
+  const contactes    = vaccins.filter((v) => v.contacte);
   const tauxContacte = vaccins.length > 0
     ? Math.round((contactes.length / vaccins.length) * 100)
     : 0;
 
   const urgentCount = urgent.filter((v) => !v.contacte).length;
 
-  // cette semaine + ce mois pour rappels à venir
-  const endWeek = new Date(now);
-  endWeek.setDate(now.getDate() + 7);
+  const endWeek  = new Date(now); endWeek.setDate(now.getDate() + 7);
   const endMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
 
   const thisWeek = useMemo(() =>
@@ -91,10 +88,12 @@ export default function Dashboard({ animaux, vaccins, settings, onSetPage, onMod
         </div>
       )}
 
-      {/* Table urgente */}
+      {/* Section urgente */}
       {urgent.length > 0 && (
         <>
           <div className="section-title">À CONTACTER MAINTENANT</div>
+
+          {/* ── Tableau desktop ─────────────────────────────── */}
           <div className="rv-table-wrapper">
             <table className="rv-table">
               <thead>
@@ -138,17 +137,11 @@ export default function Dashboard({ animaux, vaccins, settings, onSetPage, onMod
                       </td>
                       <td>
                         <div style={{ display: 'flex', gap: 6 }}>
-                          <button
-                            className="btn btn-outline btn-sm"
-                            onClick={() => onModalOpen(a, v)}
-                          >
+                          <button className="btn btn-outline btn-sm" onClick={() => onModalOpen(a, v)}>
                             Préparer
                           </button>
                           {!v.contacte && (
-                            <button
-                              className="btn btn-ghost btn-sm"
-                              onClick={() => onMarquerContacte(v.id)}
-                            >
+                            <button className="btn btn-ghost btn-sm" onClick={() => onMarquerContacte(v.id)}>
                               ✓ Contacté
                             </button>
                           )}
@@ -159,6 +152,45 @@ export default function Dashboard({ animaux, vaccins, settings, onSetPage, onMod
                 })}
               </tbody>
             </table>
+          </div>
+
+          {/* ── Cards mobile ────────────────────────────────── */}
+          <div className="mobile-cards">
+            {urgent.map((v) => {
+              const a = getAnimal(v.animal_id);
+              if (!a) return null;
+              const jours = joursRestants(v.date_prochain);
+              return (
+                <div key={v.id} className={`mac${v.contacte ? ' contacted' : ''}`}>
+                  <div className="mac-top">
+                    <SpeciesIcon espece={a.espece} size={22} />
+                    <div>
+                      <div className="mac-name">{a.nom}</div>
+                      <div className="mac-espece">{a.espece}{a.race ? ` · ${a.race}` : ''}</div>
+                    </div>
+                  </div>
+                  <div className="mac-proprio">{a.proprietaire_prenom} {a.proprietaire_nom}</div>
+                  <div className="mac-meta">
+                    <StatusBadge statut={v.statut} />
+                    <span style={{ fontSize: 12, color: 'var(--text-2)' }}>{v.type}</span>
+                    <span className="mono">{formatDate(v.date_prochain)}</span>
+                    {jours < 0 && (
+                      <span className="mono red">{Math.abs(jours)}j de retard</span>
+                    )}
+                  </div>
+                  <div className="mac-actions">
+                    <button className="btn btn-outline btn-sm" onClick={() => onModalOpen(a, v)}>
+                      Préparer
+                    </button>
+                    {!v.contacte && (
+                      <button className="btn btn-ghost btn-sm" onClick={() => onMarquerContacte(v.id)}>
+                        ✓ Contacté
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </>
       )}

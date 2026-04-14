@@ -871,3 +871,256 @@ body {
   padding: 16px;
   margin-top: 12px;
 }
+
+/* ═══════════════════════════════════════════════════════════
+   MOBILE HEADER + HAMBURGER
+═══════════════════════════════════════════════════════════ */
+.mobile-header {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 56px;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  z-index: 400;
+  align-items: center;
+  padding: 0 16px;
+  gap: 0;
+}
+
+.hamburger-btn {
+  background: none;
+  border: none;
+  color: var(--text-1);
+  cursor: auto;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+.hamburger-btn:hover { background: rgba(78,205,140,0.08); }
+
+.mobile-logo {
+  flex: 1;
+  text-align: center;
+  font-family: 'Sora', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--text-1);
+  letter-spacing: -0.2px;
+}
+
+.mobile-header-badge {
+  background: var(--red);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  padding: 2px 7px;
+  border-radius: 20px;
+  min-width: 20px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+/* ── Sidebar backdrop ───────────────────────────────────────── */
+.sidebar-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(10,15,13,0.75);
+  z-index: 450;
+  backdrop-filter: blur(3px);
+}
+
+/* ── Mobile animal cards ────────────────────────────────────── */
+.mobile-cards {
+  display: none;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.mac {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+  transition: border-color 0.2s;
+}
+.mac:hover { border-color: var(--border-h); }
+.mac.contacted { opacity: 0.5; }
+
+.mac-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.mac-name {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text-1);
+}
+.mac-espece {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.mac-badge-ml { margin-left: auto; }
+
+.mac-proprio {
+  font-size: 12px;
+  color: var(--text-2);
+  margin-bottom: 10px;
+  padding-left: 34px;
+}
+
+.mac-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+  padding-left: 34px;
+}
+
+.mac-actions {
+  display: flex;
+  gap: 8px;
+}
+.mac-actions .btn { flex: 1; justify-content: center; }
+.mac-actions .btn-danger-icon { flex: 0; }
+
+/* ═══════════════════════════════════════════════════════════
+   @media (max-width: 768px)
+═══════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+
+  /* ── Curseur personnalisé désactivé ─── */
+  body { cursor: auto !important; }
+  .cursor-dot, .cursor-ring { display: none !important; }
+
+  /* ── Layout ─────────────────────────── */
+  .app-layout {
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+  }
+  .main-content {
+    padding: 72px 16px 32px;
+    overflow-y: visible;
+    height: auto;
+  }
+
+  /* ── Mobile header visible ──────────── */
+  .mobile-header { display: flex; }
+
+  /* ── Sidebar en overlay ─────────────── */
+  .sidebar {
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 500;
+    transform: translateX(-100%);
+    transition: transform 0.26s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 260px;
+    min-width: 260px;
+    overflow-y: auto;
+  }
+  .sidebar.open { transform: translateX(0); }
+
+  /* ── Backdrop visible ───────────────── */
+  .sidebar-backdrop { display: block; }
+
+  /* ── Stats 2×2 ──────────────────────── */
+  .stat-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .stat-value { font-size: 24px; }
+
+  /* ── Tableaux → cards ───────────────── */
+  .rv-table-wrapper { display: none; }
+  .mobile-cards     { display: flex; }
+
+  /* ── Fiche animal 1 colonne ─────────── */
+  .fiche-col-layout { grid-template-columns: 1fr; }
+
+  /* ── Formulaire 1 colonne ───────────── */
+  .form-grid { grid-template-columns: 1fr; }
+  .form-group.span2 { grid-column: 1; }
+
+  /* ── Page header empilé ─────────────── */
+  .page-header-row { flex-direction: column; gap: 12px; }
+  .page-header-row > .btn { width: 100%; justify-content: center; }
+
+  /* ── Filtres scroll horizontal ──────── */
+  .filter-row {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    margin-bottom: 14px;
+  }
+  .filter-row::-webkit-scrollbar { display: none; }
+  .filter-chip { flex-shrink: 0; }
+
+  /* ── Typographie ─────────────────────── */
+  .page-title { font-size: 22px; }
+  .page-date  { margin-bottom: 20px; }
+
+  /* ── Rappels items ──────────────────── */
+  .rappel-item { flex-wrap: wrap; gap: 6px; }
+
+  /* ── Pagination ─────────────────────── */
+  .pagination { gap: 5px; }
+  .page-btn   { padding: 5px 8px; font-size: 11px; }
+
+  /* ── Vaccin actions ─────────────────── */
+  .vaccin-actions { flex-wrap: wrap; }
+  .vaccin-actions .btn { flex: 1; min-width: 100px; justify-content: center; }
+
+  /* ── Curseurs auto sur boutons ──────── */
+  .btn, .filter-chip, .nav-item,
+  .btn-reset-demo, .back-btn { cursor: auto; }
+
+  /* ── Modal plein écran slide-up ─────── */
+  .modal-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+  .modal-box {
+    border-radius: 20px 20px 0 0;
+    max-width: 100%;
+    width: 100%;
+    max-height: 92vh;
+    animation: slide-up-modal 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .modal-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .modal-actions .btn,
+  .modal-actions a.btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@keyframes slide-up-modal {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+/* ── pointer: coarse — désactive curseur sur tout écran tactile ── */
+@media (pointer: coarse) {
+  body { cursor: auto !important; }
+  .cursor-dot, .cursor-ring { display: none !important; }
+}

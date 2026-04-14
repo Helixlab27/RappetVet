@@ -4,15 +4,15 @@ import Sidebar     from './components/Sidebar';
 import Toast       from './components/Toast';
 import ModalRappel from './components/ModalRappel';
 
-import Dashboard   from './pages/Dashboard';
-import Animaux     from './pages/Animaux';
-import FicheAnimal from './pages/FicheAnimal';
+import Dashboard    from './pages/Dashboard';
+import Animaux      from './pages/Animaux';
+import FicheAnimal  from './pages/FicheAnimal';
 import NouvelAnimal from './pages/NouvelAnimal';
-import Rappels     from './pages/Rappels';
-import Parametres  from './pages/Parametres';
+import Rappels      from './pages/Rappels';
+import Parametres   from './pages/Parametres';
 
-import { useStorage }  from './hooks/useStorage';
-import { useToast }    from './hooks/useToast';
+import { useStorage }    from './hooks/useStorage';
+import { useToast }      from './hooks/useToast';
 import { buildDemoData } from './utils/demoData';
 import { calcDateProchain, calcStatut } from './utils/statut';
 
@@ -23,27 +23,19 @@ const DEFAULT_SETTINGS = {
   adresse: '',
 };
 
-function initData(key, defaultVal) {
-  try {
-    const v = localStorage.getItem(key);
-    if (v !== null) return JSON.parse(v);
-  } catch {}
-  return defaultVal;
-}
-
 export default function App() {
-  const [page, setPage]           = useState('dashboard');
+  const [page, setPage]                   = useState('dashboard');
   const [selectedAnimal, setSelectedAnimal] = useState(null);
-  const [modal, setModal]         = useState(null); // { animal, vaccin }
+  const [modal, setModal]                 = useState(null);
+  const [menuOpen, setMenuOpen]           = useState(false);
 
   const { toasts, addToast } = useToast();
 
-  // ── Data ────────────────────────────────────────────────────
+  // ── Data ─────────────────────────────────────────────────────
   const [animaux, setAnimaux]   = useStorage('rv_animaux', null);
   const [vaccins, setVaccins]   = useStorage('rv_vaccins', null);
   const [settings, setSettings] = useStorage('rv_settings', DEFAULT_SETTINGS);
 
-  // Init démo si première fois
   const [animauxData, vaccinsData] = useMemo(() => {
     if (animaux === null || vaccins === null) {
       const demo = buildDemoData();
@@ -58,13 +50,15 @@ export default function App() {
     return [animaux, vaccins];
   }, [animaux, vaccins]);
 
-  // ── Handlers ─────────────────────────────────────────────────
+  // ── Handlers ──────────────────────────────────────────────────
+  const navigate = (p) => { setPage(p); setMenuOpen(false); };
+
   const resetDemo = () => {
     if (!confirm('Réinitialiser toutes les données avec les données de démo ?')) return;
     const demo = buildDemoData();
     setAnimaux(demo.animaux);
     setVaccins(demo.vaccins);
-    setPage('dashboard');
+    navigate('dashboard');
     addToast('Données de démo rechargées');
   };
 
@@ -88,7 +82,7 @@ export default function App() {
   const saveNouvelAnimal = (animal, vaccin) => {
     setAnimaux((prev) => [...prev, animal]);
     setVaccins((prev) => [...prev, vaccin]);
-    setPage('animaux');
+    navigate('animaux');
     addToast(`${animal.nom} enregistré avec succès`);
   };
 
@@ -98,7 +92,7 @@ export default function App() {
   };
 
   const renouvellerVaccin = (oldVaccin) => {
-    const today = new Date().toISOString().slice(0, 10);
+    const today   = new Date().toISOString().slice(0, 10);
     const prochain = calcDateProchain(today, oldVaccin.frequence_mois);
     const statut   = calcStatut(prochain);
     setVaccins((prev) => prev.map((v) =>
@@ -114,7 +108,7 @@ export default function App() {
     [vaccinsData]
   );
 
-  // ── Render page ──────────────────────────────────────────────
+  // ── Page render ───────────────────────────────────────────────
   const renderPage = () => {
     switch (page) {
       case 'dashboard':
@@ -123,7 +117,7 @@ export default function App() {
             animaux={animauxData}
             vaccins={vaccinsData}
             settings={settings}
-            onSetPage={setPage}
+            onSetPage={navigate}
             onModalOpen={(a, v) => setModal({ animal: a, vaccin: v })}
             onMarquerContacte={marquerContacte}
           />
@@ -133,7 +127,7 @@ export default function App() {
           <Animaux
             animaux={animauxData}
             vaccins={vaccinsData}
-            onSetPage={setPage}
+            onSetPage={navigate}
             onSelectAnimal={setSelectedAnimal}
             onDelete={deleteAnimal}
           />
@@ -145,7 +139,7 @@ export default function App() {
             animaux={animauxData}
             vaccins={vaccinsData}
             settings={settings}
-            onBack={() => setPage('animaux')}
+            onBack={() => navigate('animaux')}
             onModalOpen={(a, v) => setModal({ animal: a, vaccin: v })}
             onMarquerContacte={marquerContacte}
             onAddVaccin={addVaccin}
@@ -156,7 +150,7 @@ export default function App() {
         return (
           <NouvelAnimal
             onSave={saveNouvelAnimal}
-            onCancel={() => setPage('animaux')}
+            onCancel={() => navigate('animaux')}
           />
         );
       case 'rappels':
@@ -179,18 +173,41 @@ export default function App() {
     <>
       <Cursor />
       <div className="grain-overlay" />
+
+      {/* ── Barre mobile fixe ──────────────────────────────── */}
+      <header className="mobile-header">
+        <button className="hamburger-btn" onClick={() => setMenuOpen(true)} aria-label="Menu">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <rect x="2" y="4.5"  width="16" height="1.5" rx="0.75" fill="currentColor"/>
+            <rect x="2" y="9.25" width="16" height="1.5" rx="0.75" fill="currentColor"/>
+            <rect x="2" y="14"   width="16" height="1.5" rx="0.75" fill="currentColor"/>
+          </svg>
+        </button>
+        <span className="mobile-logo">RappelVet</span>
+        {urgentCount > 0 && (
+          <span className="mobile-header-badge">{urgentCount}</span>
+        )}
+      </header>
+
+      {/* ── Backdrop sidebar ───────────────────────────────── */}
+      {menuOpen && (
+        <div className="sidebar-backdrop" onClick={() => setMenuOpen(false)} />
+      )}
+
       <div className="app-layout">
         <Sidebar
           page={page}
-          setPage={setPage}
+          setPage={navigate}
           urgentCount={urgentCount}
           settings={settings}
           onResetDemo={resetDemo}
+          isOpen={menuOpen}
         />
         <main className="main-content">
           {renderPage()}
         </main>
       </div>
+
       {modal && (
         <ModalRappel
           animal={modal.animal}
